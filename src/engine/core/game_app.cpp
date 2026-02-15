@@ -14,8 +14,6 @@
 #include "../object/game_object.h"
 #include "../component/transform_component.h"
 #include "../component/sprite_component.h"
-#include "../physics/physics_engine.h"
-#include "../component/physics_component.h"
 #include "../scene/scene_manager.h"
 #include "config.h"
 namespace engine::core
@@ -202,20 +200,6 @@ namespace engine::core
         return true;
     }
 
-    bool GameApp::initPhysicsEngine()
-    {
-        try
-        {
-            physics_engine_ = std::make_unique<engine::physics::PhysicsEngine>();
-        }
-        catch (const std::exception &e)
-        {
-            spdlog::error("PhysicsEngine init failed: {},{},{}", e.what(), __FILE__, __LINE__);
-            return false;
-        }
-        return true;
-    }
-
     bool GameApp::initGameState()
     {
         try
@@ -236,7 +220,7 @@ namespace engine::core
         try
         {
             context_ = std::make_unique<engine::core::Context>(*input_manager_, *renderer_, *resource_manager_, *camera_,
-                                                               *text_renderer_, *physics_engine_, *audio_player_, *game_state_);
+                                                               *text_renderer_, *audio_player_, *game_state_);
         }
         catch (const std::exception &e)
         {
@@ -298,10 +282,6 @@ namespace engine::core
             return false;
         }
         if (!initInputManager())
-        {
-            return false;
-        }
-        if (!initPhysicsEngine())
         {
             return false;
         }

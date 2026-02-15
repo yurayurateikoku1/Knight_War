@@ -15,11 +15,6 @@ namespace engine::resource
     class ResourceManager;
 }
 
-namespace engine::physics
-{
-    class PhysicsEngine;
-}
-
 namespace engine::audio
 {
     class AudioPlayer;
@@ -40,8 +35,7 @@ namespace engine::core
         engine::resource::ResourceManager &resource_manager_;
         /// @brief 摄像机
         engine::render::Camera &camera_;
-        /// @brief 物理引擎
-        engine::physics::PhysicsEngine &physics_engine_;
+
         engine::audio::AudioPlayer &audio_player_;
         engine::render::TextRenderer &text_renderer_;
         engine::core::GameState &game_state_;
@@ -52,7 +46,6 @@ namespace engine::core
                 engine::resource::ResourceManager &resource_manager,
                 engine::render::Camera &camera,
                 engine::render::TextRenderer &text_renderer,
-                engine::physics::PhysicsEngine &physics_engine,
                 engine::audio::AudioPlayer &audio_player,
                 engine::core::GameState &game_state);
         Context(const Context &) = delete;
@@ -65,7 +58,6 @@ namespace engine::core
         engine::resource::ResourceManager &getResourceManager() const { return resource_manager_; }
         engine::render::Camera &getCamera() const { return camera_; }
         engine::render::TextRenderer &getTextRenderer() const { return text_renderer_; }
-        engine::physics::PhysicsEngine &getPhysicsEngine() const { return physics_engine_; }
         engine::audio::AudioPlayer &getAudioPlayer() const { return audio_player_; }
         engine::core::GameState &getGameState() const { return game_state_; }
     };

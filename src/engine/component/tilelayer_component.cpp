@@ -3,7 +3,6 @@
 #include "../core/context.h"
 #include "../render/render.h"
 #include "../render/camera.h"
-#include "../physics/physics_engine.h"
 #include <spdlog/spdlog.h>
 
 engine::component::TileLayerComponent::TileLayerComponent(const glm::ivec2 &tile_size, const glm::ivec2 &map_size, std::vector<TileInfo> &&tiles)
@@ -95,13 +94,5 @@ void engine::component::TileLayerComponent::render(engine::core::Context &contex
                 rendered_count++;
             }
         }
-    }
-}
-
-void engine::component::TileLayerComponent::clean()
-{
-    if (physics_engine_)
-    {
-        physics_engine_->unregisterCollisionTileLayer(this);
     }
 }

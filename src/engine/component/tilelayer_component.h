@@ -12,10 +12,7 @@ namespace engine::core
 {
     class Context;
 }
-namespace engine::physics
-{
-    class PhysicsEngine;
-}
+
 namespace engine::component
 {
     /// @brief 瓦片类型
@@ -64,7 +61,6 @@ namespace engine::component
         std::vector<TileInfo> tiles_;
         glm::vec2 offset_{0.0f, 0.0f};
         bool is_hidden_ = false;
-        engine::physics::PhysicsEngine *physics_engine_ = nullptr;
 
     public:
         TileLayerComponent() = default;
@@ -83,12 +79,10 @@ namespace engine::component
 
         void setOffset(const glm::vec2 &offset) { offset_ = offset; };
         void setHidden(bool is_hidden) { is_hidden_ = is_hidden; };
-        void setPhysicsEngine(engine::physics::PhysicsEngine *physics_engine) { physics_engine_ = physics_engine; }
 
     protected:
         void init() override;
         void update(float dt, engine::core::Context &) override {}
         void render(engine::core::Context &) override;
-        void clean() override;
     };
 }

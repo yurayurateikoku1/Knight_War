@@ -6,7 +6,6 @@
 #include "../core/context.h"
 #include "../core/game_state.h"
 #include "../ui/ui_manager.h"
-#include "../physics/physics_engine.h"
 #include <algorithm>
 engine::scene::Scene::Scene(const std::string &scene_name, engine::core::Context &context, engine::scene::SceneManager &scene_manager)
     : scene_name_(scene_name), context_(context), scene_manager_(scene_manager), is_initialized_(false), ui_manager_(std::make_unique<engine::ui::UIManager>())
@@ -30,8 +29,6 @@ void engine::scene::Scene::update(float dt)
     }
     if (context_.getGameState().isPlaying())
     {
-        // 更新物理引擎
-        context_.getPhysicsEngine().update(dt);
         context_.getCamera().update(dt);
     }
 

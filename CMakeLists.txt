@@ -67,5 +67,6 @@ target_link_libraries(${TARGET}
 )
 
 if(MSVC)
-    target_link_options(${TARGET} PRIVATE "/SUBSYSTEM:WINDOWS")
+    target_link_options(${TARGET} PRIVATE "/SUBSYSTEM:CONSOLE")
 endif()
+
