@@ -1,0 +1,94 @@
+#pragma once
+#include "../render/sprite.h"
+#include "component.h"
+#include <vector>
+#include <glm/vec2.hpp>
+
+namespace engine::render
+{
+    class Sprite;
+}
+namespace engine::core
+{
+    class Context;
+}
+namespace engine::physics
+{
+    class PhysicsEngine;
+}
+namespace engine::component
+{
+    /// @brief 瓦片类型
+    enum class TileType
+    {
+        /// @brief 空白
+        EMPTY,
+        /// @brief 普通
+        NORMAL,
+        /// @brief 静止可碰撞
+        SOLID,
+        /// @brief 单向静止可碰撞
+        UNISOLID,
+        /// @brief 斜坡瓦片,高度左0右1
+        SLOPE_0_1,
+        /// @brief 斜坡瓦片,高度右0左1
+        SLOPE_1_0,
+        /// @brief 斜坡瓦片,高度左0右1/2
+        SLOPE_0_2,
+        /// @brief 斜坡瓦片,高度左1/2右1
+        SLOPE_2_1,
+        /// @brief 斜坡瓦片,高度左1右1/2
+        SLOPE_1_2,
+        /// @brief 斜坡瓦片,高度左1/2右0
+        SLOPE_2_0,
+        HAZARD,
+        LADDER,
+    };
+
+    /// @brief  包含单个瓦片的渲染和逻辑信息
+    struct TileInfo
+    {
+        /// @brief 瓦片的视觉表示
+        render::Sprite sprite;
+        /// @brief  瓦片的逻辑类型
+        TileType type;
+        TileInfo(render::Sprite sprite = render::Sprite(), TileType type = TileType::EMPTY) : sprite(std::move(sprite)), type(type) {}
+    };
+    class TileLayerComponent : public Component
+    {
+        friend class engine::object::GameObject;
+
+    private:
+        glm::ivec2 tile_size_;
+        glm::ivec2 map_size_;
+        std::vector<TileInfo> tiles_;
+        glm::vec2 offset_{0.0f, 0.0f};
+        bool is_hidden_ = false;
+        engine::physics::PhysicsEngine *physics_engine_ = nullptr;
+
+    public:
+        TileLayerComponent() = default;
+        TileLayerComponent(const glm::ivec2 &tile_size, const glm::ivec2 &map_size, std::vector<TileInfo> &&tiles);
+
+        const TileInfo *getTileInfoAt(glm::ivec2 pos) const;
+        TileType getTileTypeAt(glm::ivec2 pos) const;
+        TileType getTileTypeAtWorldPos(const glm::vec2 &pos) const;
+
+        glm::ivec2 getTileSize() const { return tile_size_; };
+        glm::ivec2 getMapSize() const { return map_size_; };
+        glm::vec2 geWorldSize() const { return glm::vec2(map_size_.x * tile_size_.x, map_size_.y * tile_size_.y); };
+        const std::vector<TileInfo> &getTiles() const { return tiles_; };
+        const glm::vec2 &getOffset() const { return offset_; };
+        bool isHidden() const { return is_hidden_; };
+
+        void setOffset(const glm::vec2 &offset) { offset_ = offset; };
+        void setHidden(bool is_hidden) { is_hidden_ = is_hidden; };
+        void setPhysicsEngine(engine::physics::PhysicsEngine *physics_engine) { physics_engine_ = physics_engine; }
+
+    protected:
+        void init() override;
+        void update(float dt, engine::core::Context &) override {}
+        void render(engine::core::Context &) override;
+        void clean() override;
+    };
+}
