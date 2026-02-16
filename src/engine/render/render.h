@@ -3,6 +3,7 @@
 #include <optional>
 #include <glm/glm.hpp>
 #include "../utils/math.h"
+#include "../component/sprite_component.h"
 struct SDL_Renderer;
 struct SDL_FRect;
 
@@ -38,6 +39,9 @@ namespace engine::render
         /// @param scale
         /// @param angle
         void drawImage(const Camera &camera, const engine::render::Image &image, const glm::vec2 &position, const glm::vec2 &scale = {1.0f, 1.0f}, double angle = 0.0f);
+
+        void drawSprite(const Camera &camera, const component::Sprite &sprite, const glm::vec2 &position,
+                        const glm::vec2 &size, const float rotation = 0.0f);
 
         /// @brief 绘制UI
         /// @param sprite

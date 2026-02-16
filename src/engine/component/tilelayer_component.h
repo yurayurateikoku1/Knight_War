@@ -1,17 +1,13 @@
 #pragma once
-#include "../render/sprite.h"
-#include "component.h"
-#include <vector>
+#include "animation_component.h"
+#include "sprite_component.h"
+#include <entt/entity/entity.hpp>
 #include <glm/vec2.hpp>
-
-namespace engine::render
-{
-    class Sprite;
-}
-namespace engine::core
-{
-    class Context;
-}
+#include <vector>
+#include <utility>
+#include <optional>
+#include <SDL3/SDL_rect.h>
+#include <nlohmann/json.hpp>
 
 namespace engine::component
 {
@@ -24,65 +20,37 @@ namespace engine::component
         NORMAL,
         /// @brief 静止可碰撞
         SOLID,
-        /// @brief 单向静止可碰撞
-        UNISOLID,
-        /// @brief 斜坡瓦片,高度左0右1
-        SLOPE_0_1,
-        /// @brief 斜坡瓦片,高度右0左1
-        SLOPE_1_0,
-        /// @brief 斜坡瓦片,高度左0右1/2
-        SLOPE_0_2,
-        /// @brief 斜坡瓦片,高度左1/2右1
-        SLOPE_2_1,
-        /// @brief 斜坡瓦片,高度左1右1/2
-        SLOPE_1_2,
-        /// @brief 斜坡瓦片,高度左1/2右0
-        SLOPE_2_0,
-        HAZARD,
-        LADDER,
+        HAZARD
     };
 
     /// @brief  包含单个瓦片的渲染和逻辑信息
     struct TileInfo
     {
-        /// @brief 瓦片的视觉表示
-        render::Sprite sprite;
-        /// @brief  瓦片的逻辑类型
-        TileType type;
-        TileInfo(render::Sprite sprite = render::Sprite(), TileType type = TileType::EMPTY) : sprite(std::move(sprite)), type(type) {}
+        engine::component::Sprite sprite_;                      ///< @brief 精灵
+        engine::component::TileType type_;                      ///< @brief 类型
+        std::optional<engine::component::Animation> animation_; ///< @brief 动画（支持Tiled动画图块）
+        std::optional<nlohmann::json> properties_;              ///< @brief 属性（存放自定义属性，方便LevelLoader解析）
+
+        TileInfo() = default;
+
+        TileInfo(engine::component::Sprite sprite,
+                 engine::component::TileType type,
+                 std::optional<engine::component::Animation> animation = std::nullopt,
+                 std::optional<nlohmann::json> properties = std::nullopt) : sprite_(std::move(sprite)),
+                                                                            type_(type),
+                                                                            animation_(std::move(animation)),
+                                                                            properties_(std::move(properties)) {}
     };
-    class TileLayerComponent : public Component
+    struct TileLayerComponent
     {
-        friend class engine::object::GameObject;
+        glm::ivec2 tile_size_;            ///< @brief 瓦片大小
+        glm::ivec2 map_size_;             ///< @brief 地图大小
+        std::vector<entt::entity> tiles_; ///< @brief 瓦片实体列表，每个瓦片对应一个实体，按顺序排列
 
-    private:
-        glm::ivec2 tile_size_;
-        glm::ivec2 map_size_;
-        std::vector<TileInfo> tiles_;
-        glm::vec2 offset_{0.0f, 0.0f};
-        bool is_hidden_ = false;
-
-    public:
-        TileLayerComponent() = default;
-        TileLayerComponent(const glm::ivec2 &tile_size, const glm::ivec2 &map_size, std::vector<TileInfo> &&tiles);
-
-        const TileInfo *getTileInfoAt(glm::ivec2 pos) const;
-        TileType getTileTypeAt(glm::ivec2 pos) const;
-        TileType getTileTypeAtWorldPos(const glm::vec2 &pos) const;
-
-        glm::ivec2 getTileSize() const { return tile_size_; };
-        glm::ivec2 getMapSize() const { return map_size_; };
-        glm::vec2 geWorldSize() const { return glm::vec2(map_size_.x * tile_size_.x, map_size_.y * tile_size_.y); };
-        const std::vector<TileInfo> &getTiles() const { return tiles_; };
-        const glm::vec2 &getOffset() const { return offset_; };
-        bool isHidden() const { return is_hidden_; };
-
-        void setOffset(const glm::vec2 &offset) { offset_ = offset; };
-        void setHidden(bool is_hidden) { is_hidden_ = is_hidden; };
-
-    protected:
-        void init() override;
-        void update(float dt, engine::core::Context &) override {}
-        void render(engine::core::Context &) override;
+        TileLayerComponent(glm::ivec2 tile_size,
+                           glm::ivec2 map_size,
+                           std::vector<entt::entity> tiles) : tile_size_(std::move(tile_size)),
+                                                              map_size_(std::move(map_size)),
+                                                              tiles_(std::move(tiles)) {}
     };
 }

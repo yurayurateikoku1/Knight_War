@@ -1,10 +1,8 @@
 #pragma once
 #include "../utils/math.h"
 #include <optional>
-namespace engine::component
-{
-    class TransformComponent;
-}
+#include <glm/common.hpp>
+
 namespace engine::render
 {
     /// @brief
@@ -19,7 +17,6 @@ namespace engine::render
         std::optional<engine::utils::Rect> limit_bounds_;
 
         float smooth_speed_ = 5.0f;
-        engine::component::TransformComponent *target_ = nullptr;
 
     public:
         Camera(const glm::vec2 &viewport_size, const glm::vec2 &position = {0.0f, 0.0f}, const std::optional<engine::utils::Rect> &limit_bounds = std::nullopt);
@@ -28,10 +25,6 @@ namespace engine::render
         Camera &operator=(const Camera &) = delete;
         Camera(Camera &&) = delete;
         Camera &operator=(Camera &&) = delete;
-
-        /// @brief 更新相机位置
-        /// @param delta
-        void update(float delta);
 
         /// @brief 移动相机
         /// @param offset
@@ -49,9 +42,7 @@ namespace engine::render
 
         void setPosition(const glm::vec2 &position);
         void setLimitBounds(const std::optional<engine::utils::Rect> &limit_bounds);
-        void setTarget(engine::component::TransformComponent *target);
 
-        engine::component::TransformComponent *getTarget() const;
         const glm::vec2 &getPosition() const { return position_; }
         const glm::vec2 &getViewportSize() const { return viewport_size_; }
         const std::optional<engine::utils::Rect> &getLimitBounds() const { return limit_bounds_; }

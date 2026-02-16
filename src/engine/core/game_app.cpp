@@ -11,7 +11,6 @@
 #include "../render/text_renderer.h"
 #include "../render/render.h"
 #include "../input/input_manager.h"
-#include "../object/game_object.h"
 #include "../component/transform_component.h"
 #include "../component/sprite_component.h"
 #include "../scene/scene_manager.h"

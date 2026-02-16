@@ -50,6 +50,39 @@ void engine::render::Renderer::drawImage(const Camera &camera, const engine::ren
     }
 }
 
+void engine::render::Renderer::drawSprite(const Camera &camera, const component::Sprite &sprite, const glm::vec2 &position, const glm::vec2 &size, const float rotation)
+{
+    auto texture = resource_manager_->getTexture(sprite.texture_id_, sprite.texture_path_);
+    if (!texture)
+    {
+        spdlog::error("Texture not found:{}", sprite.texture_id_);
+        return;
+    }
+
+    glm::vec2 screen_position = camera.world2Screen(position);
+
+    SDL_FRect dest_rect = {
+        screen_position.x,
+        screen_position.y,
+        size.x,
+        size.y};
+    if (!isRectInViewport(camera, dest_rect))
+    { // 视口裁剪：如果精灵超出视口，则不绘制
+        return;
+    }
+
+    SDL_FRect src_rect = {
+        sprite.src_rect_.position.x,
+        sprite.src_rect_.position.y,
+        sprite.src_rect_.size.x,
+        sprite.src_rect_.size.y};
+
+    if (!SDL_RenderTextureRotated(renderer_, texture, &src_rect, &dest_rect, rotation, NULL, sprite.is_flipped_ ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE))
+    {
+        spdlog::error("Render texture failed:{},{}", sprite.texture_id_, SDL_GetError());
+    }
+}
+
 void engine::render::Renderer::drawUIImage(const engine::render::Image &image, const glm::vec2 &position, const std::optional<glm::vec2> &size)
 {
     auto texture = resource_manager_->getTexture(image.getTextureId());

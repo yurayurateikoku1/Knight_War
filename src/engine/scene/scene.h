@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include <string>
-
+#include <entt/entity/registry.hpp>
 namespace engine::core
 {
     class Context;
@@ -22,11 +22,6 @@ namespace engine::input
     class InputManager;
 }
 
-namespace engine::object
-{
-    class GameObject;
-}
-
 namespace engine::scene
 {
     class SceneManager;
@@ -37,11 +32,8 @@ namespace engine::scene
         std::string scene_name_;
         engine::core::Context &context_;
         std::unique_ptr<engine::ui::UIManager> ui_manager_;
+        entt::registry registry_;
         bool is_initialized_{false};
-        /// @brief 场景中的游戏对象
-        std::vector<std::unique_ptr<engine::object::GameObject>> game_objects_;
-        /// @brief 将要添加的游戏对象
-        std::vector<std::unique_ptr<engine::object::GameObject>> pending_additions_;
 
     public:
         /// @brief
@@ -61,23 +53,6 @@ namespace engine::scene
         virtual void handleInput();
         virtual void clean();
 
-        /// @brief 添加游戏对象
-        /// @param game_object
-        virtual void addGameObject(std::unique_ptr<engine::object::GameObject> &&game_object);
-        /// @brief 安全地添加游戏对象。（添加到pending_additions_中）
-        /// @param game_object
-        virtual void safeAddGameObject(std::unique_ptr<engine::object::GameObject> &&game_object);
-        /// @brief  移除游戏对象
-        /// @param game_object
-        virtual void removeGameObject(engine::object::GameObject *game_object_ptr);
-        /// @brief 安全地移除游戏对象
-        virtual void safeRemoveGameObject(engine::object::GameObject *game_object_ptr);
-
-        const std::vector<std::unique_ptr<engine::object::GameObject>> &getGameObjects() const { return game_objects_; }
-        std::vector<std::unique_ptr<engine::object::GameObject>> &getGameObjects() { return game_objects_; }
-
-        engine::object::GameObject *findGameObjectByName(const std::string &name) const;
-
         /// @brief 请求弹出场景
         void requestPopScene();
         /// @brief 请求推入场景
@@ -94,6 +69,7 @@ namespace engine::scene
         void setInitialized(bool initialized) { is_initialized_ = initialized; }
         bool getInitialized() const { return is_initialized_; }
 
+        entt::registry &getRegistry() { return registry_; }
         engine::core::Context &getContext() const { return context_; }
 
     protected:
