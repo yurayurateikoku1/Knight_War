@@ -47,15 +47,6 @@ void engine::scene::SceneManager::render()
     }
 }
 
-void engine::scene::SceneManager::handleInput()
-{
-    Scene *current_scene = getCurrentScene();
-    if (current_scene)
-    {
-        current_scene->handleInput();
-    }
-}
-
 void engine::scene::SceneManager::close()
 {
     spdlog::info("SceneManager closed");

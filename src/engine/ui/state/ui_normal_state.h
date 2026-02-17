@@ -13,6 +13,6 @@ namespace engine::ui::state
 
     private:
         void enter() override;
-        std::unique_ptr<UIState> handleInput(engine::core::Context &) override;
+        void update(float delta_time, engine::core::Context &context) override;
     };
 }

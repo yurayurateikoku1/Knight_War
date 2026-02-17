@@ -44,36 +44,15 @@ void engine::ui::UIElement::render(engine::core::Context &context)
     }
 }
 
-bool engine::ui::UIElement::handleInput(engine::core::Context &context)
-{
-    if (!visible_)
-    {
-        return false;
-    }
-
-    for (auto it = children_.begin(); it != children_.end();)
-    {
-        if (*it && !(*it)->isNeedRemove())
-        {
-            if ((*it)->handleInput(context))
-            {
-                return true;
-            }
-            ++it;
-        }
-        else
-        {
-            it = children_.erase(it);
-        }
-    }
-    return false;
-}
-
-void engine::ui::UIElement::addChild(std::unique_ptr<UIElement> child)
+void engine::ui::UIElement::addChild(std::unique_ptr<UIElement> child, int order_index)
 {
     if (child)
     {
-        child->setParent(this);
+        child->setParent(this); // 设置父指针
+        if (order_index >= 0)
+        {
+            child->setOrderIndex(order_index);
+        }
         children_.push_back(std::move(child));
     }
 }
@@ -92,6 +71,23 @@ std::unique_ptr<engine::ui::UIElement> engine::ui::UIElement::removeChild(UIElem
     return nullptr;
 }
 
+std::unique_ptr<engine::ui::UIElement> engine::ui::UIElement::removeChildById(entt::id_type id)
+{
+    auto it = std::find_if(children_.begin(), children_.end(),
+                           [id](const std::unique_ptr<UIElement> &p)
+                           {
+                               return p->getId() == id;
+                           });
+    if (it != children_.end())
+    {
+        std::unique_ptr<UIElement> removed_child = std::move(*it);
+        children_.erase(it);
+        removed_child->setParent(nullptr); // 清除父指针
+        return removed_child;              // 返回被移除的子元素（可以挂载到别处）
+    }
+    return nullptr; // 未找到子元素
+}
+
 void engine::ui::UIElement::removeAllChildren()
 {
     for (auto &child : children_)
@@ -99,6 +95,26 @@ void engine::ui::UIElement::removeAllChildren()
         child->setParent(nullptr);
     }
     children_.clear();
+}
+
+engine::ui::UIElement *engine::ui::UIElement::getChildById(entt::id_type id) const
+{
+    auto it = std::find_if(children_.begin(), children_.end(),
+                           [id](const std::unique_ptr<UIElement> &p)
+                           {
+                               return p->getId() == id;
+                           });
+    if (it != children_.end())
+    {
+        return it->get();
+    }
+    return nullptr; // 未找到子元素
+}
+
+void engine::ui::UIElement::sortChildrenByOrderIndex()
+{
+    std::stable_sort(children_.begin(), children_.end(), [](const std::unique_ptr<UIElement> &a, const std::unique_ptr<UIElement> &b)
+                     { return a->getOrderIndex() < b->getOrderIndex(); });
 }
 
 engine::utils::Rect engine::ui::UIElement::getBounds() const

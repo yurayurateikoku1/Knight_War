@@ -5,6 +5,9 @@
 #include "../resource/resource_manager.h"
 #include "../audio/audio_player.h"
 #include <spdlog/spdlog.h>
+#include <entt/core/hashed_string.hpp>
+
+using namespace entt::literals;
 
 engine::ui::UIInteractive::UIInteractive(engine::core::Context &context, glm::vec2 position, glm::vec2 size)
     : UIElement(std::move(position), std::move(size)), context_(context)
@@ -20,11 +23,11 @@ void engine::ui::UIInteractive::addImage(entt::id_type name_id, engine::render::
     {
         size_ = context_.getResourceManager().getTextureSize(image.getTextureId());
     }
-    // 添加精灵
-    images_[name_id] = std::move(image);
+    // 添加图片 (如果name_id已存在，则替换)
+    images_.insert_or_assign(name_id, std::move(image));
 }
 
-void engine::ui::UIInteractive::setImage(entt::id_type name_id)
+void engine::ui::UIInteractive::setCurrentImage(entt::id_type name_id)
 {
     if (images_.find(name_id) != images_.end())
     {
@@ -36,10 +39,16 @@ void engine::ui::UIInteractive::setImage(entt::id_type name_id)
     }
 }
 
-void engine::ui::UIInteractive::addSound(entt::id_type name_id, entt::hashed_string path)
+void engine::ui::UIInteractive::setHoverSound(entt::id_type id, const std::string &path)
 {
-    sounds_.emplace(name_id, path.value());
-    context_.getResourceManager().loadSound(path);
+    context_.getResourceManager().loadSound(id, path);
+    sounds_.emplace("ui_hover"_hs, id);
+}
+
+void engine::ui::UIInteractive::setClickSound(entt::id_type id, const std::string &path)
+{
+    context_.getResourceManager().loadSound(id, path); // 确保音效资源被加载
+    sounds_.emplace("ui_click"_hs, id);
 }
 
 void engine::ui::UIInteractive::playSound(entt::id_type name_id)
@@ -72,23 +81,24 @@ void engine::ui::UIInteractive::setState(std::unique_ptr<engine::ui::state::UISt
     state_->enter();
 }
 
-bool engine::ui::UIInteractive::handleInput(engine::core::Context &context)
+void engine::ui::UIInteractive::setNextState(std::unique_ptr<engine::ui::state::UIState> state)
 {
-    if (UIElement::handleInput(context))
-    {
-        return true;
-    }
+    next_state_ = std::move(state);
+}
 
-    // 先更新子节点，再更新自己（状态）
+void engine::ui::UIInteractive::update(float delta_time, engine::core::Context &context)
+{
+    // 先更新子节点
+    UIElement::update(delta_time, context);
     if (state_ && interactive_)
     {
-        if (auto next_state = state_->handleInput(context); next_state)
+        if (next_state_)
         {
-            setState(std::move(next_state));
-            return true;
+            setState(std::move(next_state_));
+            next_state_.reset();
         }
+        state_->update(delta_time, context);
     }
-    return false;
 }
 
 void engine::ui::UIInteractive::render(engine::core::Context &context)

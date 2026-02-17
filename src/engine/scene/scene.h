@@ -50,7 +50,6 @@ namespace engine::scene
         virtual void init();
         virtual void update(float dt);
         virtual void render();
-        virtual void handleInput();
         virtual void clean();
 
         /// @brief 请求弹出场景

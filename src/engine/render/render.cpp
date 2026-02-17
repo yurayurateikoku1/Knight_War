@@ -124,7 +124,7 @@ void engine::render::Renderer::drawRect(const Camera &camera, const glm::vec2 &p
 
 void engine::render::Renderer::drawUIImage(const engine::render::Image &image, const glm::vec2 &position, const std::optional<glm::vec2> &size)
 {
-    auto texture = resource_manager_->getTexture(image.getTextureId());
+    auto texture = resource_manager_->getTexture(image.getTextureId(), image.getTexturePath());
     if (!texture)
     {
         spdlog::error("Texture not found:{}", image.getTextureId());

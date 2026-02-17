@@ -44,7 +44,6 @@ namespace engine::scene
 
         void update(float dt);
         void render();
-        void handleInput();
         void close();
 
     private:

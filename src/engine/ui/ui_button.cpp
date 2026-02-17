@@ -4,22 +4,14 @@
 #include <entt/core/hashed_string.hpp>
 using namespace entt::literals;
 
-engine::ui::UIButton::UIButton(engine::core::Context &context, const std::string &norml_image_id, const std::string &hover_image_id, const std::string &pressed_image_id, const glm::vec2 &position, const glm::vec2 &size, std::function<void()> callback)
-    : UIInteractive(context, position, size), callback_(std::move(callback))
+engine::ui::UIButton::UIButton(engine::core::Context &context, engine::render::Image normal_image, engine::render::Image hover_image, engine::render::Image pressed_image, const glm::vec2 &position, const glm::vec2 &size, std::function<void()> click_callback, std::function<void()> hover_enter_callback, std::function<void()> hover_leave_callback)
+    : UIInteractive(context, std::move(position), std::move(size)), click_callback_(std::move(click_callback)), hover_enter_callback_(std::move(hover_enter_callback)), hover_leave_callback_(std::move(hover_leave_callback))
 {
-    addImage("normal"_hs, engine::render::Image(norml_image_id));
-    addImage("hover"_hs, engine::render::Image(hover_image_id));
-    addImage("pressed"_hs, engine::render::Image(pressed_image_id));
-    setState(std::make_unique<engine::ui::state::UINormalState>(this));
-    addSound("hover"_hs, "assets/audio/button_hover.wav"_hs);
-    addSound("pressed"_hs, "assets/audio/button_click.wav"_hs);
-    spdlog::info("UIButton created");
-}
+    addImage("normal"_hs, std::move(normal_image));
+    addImage("hover"_hs, std::move(hover_image));
+    addImage("pressed"_hs, std::move(pressed_image));
 
-void engine::ui::UIButton::clicked()
-{
-    if (callback_)
-    {
-        callback_();
-    }
+    setState(std::make_unique<engine::ui::state::UINormalState>(this));
+
+    spdlog::info("UIButton created");
 }

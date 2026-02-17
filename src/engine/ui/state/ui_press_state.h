@@ -8,11 +8,11 @@ namespace engine::ui::state
         friend class engine::ui::UIInteractive;
 
     public:
-        UIPressState(engine::ui::UIInteractive *owner) : UIState(owner) {}
-        ~UIPressState() override = default;
+        UIPressState(engine::ui::UIInteractive *owner);
+        ~UIPressState();
 
     private:
         void enter() override;
-        std::unique_ptr<UIState> handleInput(engine::core::Context &) override;
+        bool onMouseReleased();
     };
 }

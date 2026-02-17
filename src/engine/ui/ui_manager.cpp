@@ -42,18 +42,6 @@ void engine::ui::UIManager::clearElements()
     }
 }
 
-bool engine::ui::UIManager::handleInput(engine::core::Context &context)
-{
-    if (root_element_ && root_element_->isVisible())
-    {
-        if (root_element_->handleInput(context))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 void engine::ui::UIManager::update(float dt, engine::core::Context &context)
 {
     if (root_element_ && root_element_->isVisible())

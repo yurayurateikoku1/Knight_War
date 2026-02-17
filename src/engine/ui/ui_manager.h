@@ -34,8 +34,8 @@ namespace engine::ui
         UIPanel *getRootElement() const;
         void clearElements();
 
-        bool handleInput(engine::core::Context &context);
-        void update(float dt, engine::core::Context &context);
+        // --- 核心循环方法 ---
+        void update(float delta_time, engine::core::Context &); ///< @brief 更新UI元素。
         void render(engine::core::Context &context);
     };
 }

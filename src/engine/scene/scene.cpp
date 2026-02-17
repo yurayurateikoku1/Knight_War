@@ -38,18 +38,6 @@ void engine::scene::Scene::render()
     ui_manager_->render(context_);
 }
 
-void engine::scene::Scene::handleInput()
-{
-    if (!is_initialized_)
-    {
-        return;
-    }
-    if (ui_manager_->handleInput(context_))
-    {
-        return;
-    }
-}
-
 void engine::scene::Scene::clean()
 {
     if (!is_initialized_)

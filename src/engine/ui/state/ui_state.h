@@ -28,7 +28,7 @@ namespace engine::ui::state
         UIState &operator=(UIState &&) = delete;
 
     protected:
-        virtual void enter() {}
-        virtual std::unique_ptr<UIState> handleInput(engine::core::Context &) = 0;
+        virtual void enter() = 0;
+        virtual void update(float, engine::core::Context &) {}
     };
 }

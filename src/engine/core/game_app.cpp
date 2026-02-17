@@ -43,7 +43,6 @@ namespace engine::core
             time_->update();
             float dt = time_->getDeltaTime();
             handleEvents();
-            scene_manager_->handleInput();
             update(dt);
             render();
             // 分发事件（让新创建的实体先更新再渲染）
@@ -347,7 +346,6 @@ namespace engine::core
     void GameApp::handleEvents()
     {
         input_manager_->update();
-        scene_manager_->handleInput();
     }
 
     void GameApp::update([[maybe_unused]] float dt)
