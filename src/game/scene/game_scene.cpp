@@ -69,8 +69,16 @@
 
 using namespace entt::literals;
 
-game::scene::GameScene::GameScene(engine::core::Context &context)
-    : Scene("GameScene", context)
+game::scene::GameScene::GameScene(engine::core::Context &context,
+                                  std::shared_ptr<game::factory::BlueprintManager> blueprint_manager,
+                                  std::shared_ptr<game::data::SessionData> session_data,
+                                  std::shared_ptr<game::data::UIConfig> ui_config,
+                                  std::shared_ptr<game::data::LevelConfig> level_config)
+    : engine::scene::Scene("GameScene", context),
+      blueprint_manager_(blueprint_manager),
+      session_data_(session_data),
+      ui_config_(ui_config),
+      level_config_(level_config)
 {
 }
 
@@ -135,6 +143,7 @@ void game::scene::GameScene::init()
         spdlog::error("Failed to init enemy spawner");
         return;
     }
+    context_.getGameState().setState(engine::core::State::Playing);
     Scene::init();
 }
 
@@ -144,6 +153,17 @@ void game::scene::GameScene::update(float dt)
 
     // 每一帧最先清理死亡实体(要在dispatcher处理完事件后再清理，因此放在下一帧开头)
     remove_dead_system_->update(registry_);
+
+    // 暂停状态下，有些功能依然正常运行
+    if (context_.getGameState().isPaused())
+    {
+        place_unit_system_->update(dt);
+        ysort_system_->update(registry_);
+        selection_system_->update();
+        units_portrait_ui_->update(dt);
+        Scene::update(dt);
+        return;
+    }
 
     timer_system_->update(dt);
     game_rule_system_->update(dt);
@@ -180,10 +200,7 @@ void game::scene::GameScene::render()
 void game::scene::GameScene::clean()
 {
     auto &dispatcher = context_.getDispatcher();
-    auto &input_manager = context_.getInputManager();
     dispatcher.disconnect(this);
-
-    input_manager.onAction("pause"_hs).disconnect<&GameScene::onClearAllPlayers>(this);
 
     Scene::clean();
 }
@@ -251,15 +268,17 @@ bool game::scene::GameScene::loadlevel()
 
 bool game::scene::GameScene::initEventConnections()
 {
-    // auto &dispatcher = context_.getDispatcher();
+    auto &dispatcher = context_.getDispatcher();
+    dispatcher.sink<game::defs::RestartEvent>().connect<&GameScene::onRestart>(this);
+    dispatcher.sink<game::defs::BackToTitleEvent>().connect<&GameScene::onBackToTitle>(this);
+    dispatcher.sink<game::defs::SaveEvent>().connect<&GameScene::onSave>(this);
 
     return true;
 }
 
 bool game::scene::GameScene::initInputConnections()
 {
-    auto &input_manager = context_.getInputManager();
-    input_manager.onAction("pause"_hs).connect<&GameScene::onClearAllPlayers>(this);
+
     return true;
 }
 
@@ -317,6 +336,32 @@ bool game::scene::GameScene::initUnitsPortraitUI()
     return true;
 }
 
+void game::scene::GameScene::onRestart()
+{
+    spdlog::info("Restarting game");
+    requestReplaceScene(std::make_unique<game::scene::GameScene>(
+        context_,
+        blueprint_manager_,
+        session_data_,
+        ui_config_,
+        level_config_));
+}
+
+void game::scene::GameScene::onBackToTitle()
+{
+    spdlog::info("Returning to title screen");
+}
+
+void game::scene::GameScene::onSave()
+{
+    spdlog::info("Saving game");
+}
+
+void game::scene::GameScene::onLevelClear()
+{
+    spdlog::info("Level cleared");
+}
+
 bool game::scene::GameScene::initSystems()
 {
     auto &dispatcher = context_.getDispatcher();
@@ -354,15 +399,5 @@ bool game::scene::GameScene::initEnemySpawner()
 {
     enemy_spawner_ = std::make_unique<game::spawner::EnemySpawner>(registry_, *entity_factory_);
     spdlog::info("Enemy spawner initialized");
-    return true;
-}
-
-bool game::scene::GameScene::onClearAllPlayers()
-{
-    auto view = registry_.view<game::component::PlayerComponent>();
-    for (auto entity : view)
-    {
-        context_.getDispatcher().enqueue(game::defs::RemovePlayerUnitEvent{entity});
-    }
     return true;
 }

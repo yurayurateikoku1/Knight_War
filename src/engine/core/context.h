@@ -23,6 +23,7 @@ namespace engine::audio
 namespace engine::core
 {
     class GameState;
+    class Time;
     /// @brief 持有对核心引擎模块引用的上下文对象
     /// 简化依赖注入，传递Context来获取引擎的各个模块
     class Context final
@@ -42,6 +43,7 @@ namespace engine::core
         engine::audio::AudioPlayer &audio_player_;
         engine::render::TextRenderer &text_renderer_;
         engine::core::GameState &game_state_;
+        engine::core::Time &time_; ///< @brief 时间
 
     public:
         Context(entt::dispatcher &dispatcher,
@@ -51,7 +53,8 @@ namespace engine::core
                 engine::render::Camera &camera,
                 engine::render::TextRenderer &text_renderer,
                 engine::audio::AudioPlayer &audio_player,
-                engine::core::GameState &game_state);
+                engine::core::GameState &game_state,
+                engine::core::Time &time);
         Context(const Context &) = delete;
         Context(Context &&) = delete;
         Context &operator=(const Context &) = delete;
@@ -65,5 +68,6 @@ namespace engine::core
         engine::render::TextRenderer &getTextRenderer() const { return text_renderer_; }
         engine::audio::AudioPlayer &getAudioPlayer() const { return audio_player_; }
         engine::core::GameState &getGameState() const { return game_state_; }
+        engine::core::Time &getTime() const { return time_; } ///< @brief 获取时间
     };
 }

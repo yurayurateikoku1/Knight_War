@@ -248,7 +248,8 @@ namespace engine::core
         try
         {
             context_ = std::make_unique<engine::core::Context>(*dispatcher_, *input_manager_, *renderer_, *resource_manager_, *camera_,
-                                                               *text_renderer_, *audio_player_, *game_state_);
+                                                               *text_renderer_, *audio_player_, *game_state_,
+                                                               *time_);
         }
         catch (const std::exception &e)
         {
