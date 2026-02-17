@@ -83,6 +83,45 @@ void engine::render::Renderer::drawSprite(const Camera &camera, const component:
     }
 }
 
+void engine::render::Renderer::drawFilledRect(const Camera &camera, const glm::vec2 &position, const glm::vec2 &size, const engine::utils::FColor &color)
+{
+    // 应用相机变换
+    auto screen_position = camera.world2Screen(position);
+    // 创建目标矩形
+    SDL_FRect dest_rect = {screen_position.x, screen_position.y, size.x, size.y};
+    // 设置颜色并绘制
+    setDrawColorFloat(color.r, color.g, color.b, color.a);
+    if (!SDL_RenderFillRect(renderer_, &dest_rect))
+    {
+        spdlog::error("Render fill rect failed:{}", SDL_GetError());
+    }
+    // 恢复默认颜色
+    setDrawColorFloat(0, 0, 0, 1.0f);
+}
+
+void engine::render::Renderer::drawRect(const Camera &camera, const glm::vec2 &position, const glm::vec2 &size, const engine::utils::FColor &color, const int thickness)
+{
+    // 应用相机变换
+    auto screen_position = camera.world2Screen(position);
+    // 创建目标矩形
+    SDL_FRect dest_rect = {screen_position.x, screen_position.y, size.x, size.y};
+    // 设置颜色并绘制
+    setDrawColorFloat(color.r, color.g, color.b, color.a);
+    for (int i = 0; i < thickness; i++)
+    {
+        if (!SDL_RenderRect(renderer_, &dest_rect))
+        {
+            spdlog::error("Render rect failed:{}", SDL_GetError());
+        }
+        dest_rect.x += 1;
+        dest_rect.y += 1;
+        dest_rect.w -= 2;
+        dest_rect.h -= 2;
+    }
+    // 恢复默认颜色
+    setDrawColorFloat(0, 0, 0, 1.0f);
+}
+
 void engine::render::Renderer::drawUIImage(const engine::render::Image &image, const glm::vec2 &position, const std::optional<glm::vec2> &size)
 {
     auto texture = resource_manager_->getTexture(image.getTextureId());

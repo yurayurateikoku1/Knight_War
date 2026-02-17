@@ -14,4 +14,6 @@ namespace game::system
     class AnimationEventSystem;
     class CombatResolveSystem;
     class ProjectileSystem;
+    class EffectSystem;
+    class HealthBarSystem;
 }

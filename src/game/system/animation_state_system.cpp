@@ -56,6 +56,13 @@ namespace game::system
             spdlog::info("player animation finished,back to idle, ID: {}", entt::to_integral(event.entity_));
             return;
         }
+
+        // 如果是一次性动画实体（例如死亡特效），则标记死亡待移除
+        if (registry_.all_of<game::defs::OneShotRemoveTag>(event.entity_))
+        {
+            registry_.emplace_or_replace<game::defs::DeadTag>(event.entity_);
+            return;
+        }
     }
 
 }
