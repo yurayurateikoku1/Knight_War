@@ -32,17 +32,19 @@ namespace game::factory
         std::unordered_map<entt::id_type, data::ProjectileBlueprint> projectile_blueprints_; ///< @brief 投射物蓝图
 
         std::unordered_map<entt::id_type, data::EffectBlueprint> effect_blueprints_; ///< @brief 特效蓝图
+        std::unordered_map<entt::id_type, data::SkillBlueprint> skill_blueprints_;   ///< @brief 技能蓝图
     public:
         BlueprintManager(engine::resource::ResourceManager &resource_manager);
         [[nodiscard]] bool loadPlayerClassBlueprints(std::string_view player_json_path);    ///< @brief 加载玩家职业蓝图, 返回是否成功
         [[nodiscard]] bool loadEnemyClassBlueprints(std::string_view enemy_json_path);      ///< @brief 加载敌人类型蓝图, 返回是否成功
         [[nodiscard]] bool loadProjectileBlueprints(std::string_view projectile_json_path); ///< @brief 加载投射物蓝图, 返回是否成功
         [[nodiscard]] bool loadEffectBlueprints(std::string_view effect_json_path);         ///< @brief 加载特效蓝图, 返回是否成功
-
-        const data::PlayerClassBlueprint &getPlayerClassBlueprint(entt::id_type id) const; ///< @brief 获取指定ID的玩家职业蓝图
-        const data::EnemyClassBlueprint &getEnemyClassBlueprint(entt::id_type id) const;   ///< @brief 获取指定ID的敌人类型蓝图
-        const data::ProjectileBlueprint &getProjectileBlueprint(entt::id_type id) const;   ///< @brief 获取指定ID的投射物蓝图
-        const data::EffectBlueprint &getEffectBlueprint(entt::id_type id) const;           ///< @brief 获取指定ID的特效蓝图
+        [[nodiscard]] bool loadSkillBlueprints(std::string_view skill_json_path);           ///< @brief 加载技能蓝图, 返回是否成功
+        const data::PlayerClassBlueprint &getPlayerClassBlueprint(entt::id_type id) const;  ///< @brief 获取指定ID的玩家职业蓝图
+        const data::EnemyClassBlueprint &getEnemyClassBlueprint(entt::id_type id) const;    ///< @brief 获取指定ID的敌人类型蓝图
+        const data::ProjectileBlueprint &getProjectileBlueprint(entt::id_type id) const;    ///< @brief 获取指定ID的投射物蓝图
+        const data::EffectBlueprint &getEffectBlueprint(entt::id_type id) const;            ///< @brief 获取指定ID的特效蓝图
+        const data::SkillBlueprint &getSkillBlueprint(entt::id_type id) const;              ///< @brief 获取指定ID的技能蓝图
 
     private:
         // --- 分别针对各个子蓝图进行json解析，并创建(返回)对应的蓝图结构体 ---
@@ -55,6 +57,7 @@ namespace game::factory
         data::PlayerBlueprint parsePlayer(const nlohmann::json &json);
         data::EnemyBlueprint parseEnemy(const nlohmann::json &json);
         data::DisplayInfoBlueprint parseDisplayInfo(const nlohmann::json &json);
+        data::BuffBlueprint parseBuff(const nlohmann::json &json);
     };
 
 }

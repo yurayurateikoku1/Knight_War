@@ -192,6 +192,12 @@ namespace game::system
                 auto &render_player = registry_.get<engine::component::RenderComponent>(unit_entity);
                 render_player.layer_ = render_place.layer_ + 1;
             }
+
+            // 如果拥有被动技能，则立刻释放技能
+            if (registry_.all_of<game::defs::PassiveSkillTag>(unit_entity))
+            {
+                context_.getDispatcher().enqueue(game::defs::SkillActiveEvent{unit_entity});
+            }
         }
         // 播放放置音效
         context_.getAudioPlayer().playSound("unit_placed"_hs);

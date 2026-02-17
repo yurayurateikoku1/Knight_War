@@ -60,6 +60,7 @@
 #include "../system/render_range_system.h"
 #include "../system/debug_ui_system.h"
 #include "../system/selection_system.h"
+#include "../system/skill_system.h"
 
 // game - loader & factory
 #include "../loader/entity_builder_mw.h"
@@ -144,7 +145,7 @@ void game::scene::GameScene::update(float dt)
     // 每一帧最先清理死亡实体(要在dispatcher处理完事件后再清理，因此放在下一帧开头)
     remove_dead_system_->update(registry_);
 
-    timer_system_->update(registry_, dt);
+    timer_system_->update(dt);
     game_rule_system_->update(dt);
     block_system_->update(registry_, dispatcher);
     set_target_system_->update(registry_);
@@ -271,7 +272,8 @@ bool game::scene::GameScene::initEntityFactory()
         if (!blueprint_manager_->loadEnemyClassBlueprints("assets/data/enemy_data.json") ||
             !blueprint_manager_->loadPlayerClassBlueprints("assets/data/player_data.json") ||
             !blueprint_manager_->loadProjectileBlueprints("assets/data/projectile_data.json") ||
-            !blueprint_manager_->loadEffectBlueprints("assets/data/effect_data.json"))
+            !blueprint_manager_->loadEffectBlueprints("assets/data/effect_data.json") ||
+            !blueprint_manager_->loadSkillBlueprints("assets/data/skill_data.json"))
         {
 
             spdlog::error("Failed to load enemy class blueprints");
@@ -330,7 +332,7 @@ bool game::scene::GameScene::initSystems()
     block_system_ = std::make_unique<game::system::BlockSystem>();
     set_target_system_ = std::make_unique<game::system::SetTargetSystem>();
     attack_starter_system_ = std::make_unique<game::system::AttackStarterSystem>();
-    timer_system_ = std::make_unique<game::system::TimerSystem>();
+    timer_system_ = std::make_unique<game::system::TimerSystem>(registry_, dispatcher);
     orientation_system_ = std::make_unique<game::system::OrientationSystem>();
     animation_state_system_ = std::make_unique<game::system::AnimationStateSystem>(registry_, dispatcher);
     animation_event_system_ = std::make_unique<game::system::AnimationEventSystem>(registry_, dispatcher);
@@ -343,6 +345,7 @@ bool game::scene::GameScene::initSystems()
     render_range_system_ = std::make_unique<game::system::RenderRangeSystem>();
     debug_ui_system_ = std::make_unique<game::system::DebugUISystem>(registry_, context_);
     selection_system_ = std::make_unique<game::system::SelectionSystem>(registry_, context_);
+    skill_system_ = std::make_unique<game::system::SkillSystem>(registry_, dispatcher, *entity_factory_);
     spdlog::info("Systems initialized");
     return true;
 }

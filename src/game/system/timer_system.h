@@ -1,6 +1,6 @@
 #pragma once
 #include <entt/entity/fwd.hpp>
-
+#include <entt/signal/fwd.hpp>
 namespace game::system
 {
 
@@ -10,13 +10,18 @@ namespace game::system
      */
     class TimerSystem
     {
+        entt::registry &registry_;
+        entt::dispatcher &dispatcher_;
+
     public:
-        void update(entt::registry &registry, float delta_time);
+        TimerSystem(entt::registry &registry, entt::dispatcher &dispatcher);
+
+        void update(float delta_time);
 
     private:
-        // 拆分逻辑的函数，在update中调用
-        void updateAttackTimer(entt::registry &registry, float delta_time); ///< @brief 处理攻击计时器
-        // TODO: 处理其他计时器
+        void updateAttackTimer(float delta_time);        ///< @brief 处理攻击计时器
+        void updateSkillCooldownTimer(float delta_time); ///< @brief 处理技能冷却计时器
+        void updateSkillDurationTimer(float delta_time); ///< @brief 处理技能持续计时器
     };
 
 }
