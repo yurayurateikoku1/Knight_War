@@ -50,6 +50,7 @@
 #include "../system/animation_state_system.h"
 #include "../system/animation_event_system.h"
 #include "../system/combat_resolve_system.h"
+#include "../system/projectile_system.h"
 
 // game - loader & factory
 #include "../loader/entity_builder_mw.h"
@@ -61,24 +62,6 @@ using namespace entt::literals;
 game::scene::GameScene::GameScene(engine::core::Context &context)
     : Scene("GameScene", context)
 {
-    auto &dispatcher = context.getDispatcher();
-    render_system_ = std::make_unique<engine::system::RenderSystem>();
-    movement_system_ = std::make_unique<engine::system::MovementSystem>();
-    animation_system_ = std::make_unique<engine::system::AnimationSystem>(registry_, dispatcher);
-    ysort_system_ = std::make_unique<engine::system::YSortSystem>();
-    audio_system_ = std::make_unique<engine::system::AudioSystem>(registry_, context_);
-
-    follow_path_system_ = std::make_unique<game::system::FollowPathSystem>();
-    remove_dead_system_ = std::make_unique<game::system::RemoveDeadSystem>();
-    block_system_ = std::make_unique<game::system::BlockSystem>();
-
-    set_target_system_ = std::make_unique<game::system::SetTargetSystem>();
-    attack_starter_system_ = std::make_unique<game::system::AttackStarterSystem>();
-    timer_system_ = std::make_unique<game::system::TimerSystem>();
-    orientation_system_ = std::make_unique<game::system::OrientationSystem>();
-    animation_state_system_ = std::make_unique<game::system::AnimationStateSystem>(registry_, dispatcher);
-    animation_event_system_ = std::make_unique<game::system::AnimationEventSystem>(registry_, dispatcher);
-    combat_resolve_system_ = std::make_unique<game::system::CombatResolveSystem>(registry_, dispatcher);
 }
 
 game::scene::GameScene::~GameScene()
@@ -107,6 +90,11 @@ void game::scene::GameScene::init()
         spdlog::error("Failed to init entity factory");
         return;
     }
+    if (!initSystems())
+    {
+        spdlog::error("Failed to init systems");
+        return;
+    }
     createTestEnemy();
     Scene::init();
 }
@@ -125,6 +113,7 @@ void game::scene::GameScene::update(float dt)
     follow_path_system_->update(registry_, dispatcher, waypoint_nodes_);
     orientation_system_->update(registry_);
     attack_starter_system_->update(registry_, dispatcher);
+    projectile_system_->update(dt);
     movement_system_->update(registry_, dt);
     animation_system_->update(dt);
     ysort_system_->update(registry_);
@@ -189,7 +178,8 @@ bool game::scene::GameScene::initEntityFactory()
     {
         blueprint_manager_ = std::make_shared<game::factory::BlueprintManager>(context_.getResourceManager());
         if (!blueprint_manager_->loadEnemyClassBlueprints("assets/data/enemy_data.json") ||
-            !blueprint_manager_->loadPlayerClassBlueprints("assets/data/player_data.json"))
+            !blueprint_manager_->loadPlayerClassBlueprints("assets/data/player_data.json") ||
+            !blueprint_manager_->loadProjectileBlueprints("assets/data/projectile_data.json"))
         {
 
             spdlog::error("Failed to load enemy class blueprints");
@@ -198,6 +188,31 @@ bool game::scene::GameScene::initEntityFactory()
     }
     entity_factory_ = std::make_unique<game::factory::EntityFactory>(registry_, *blueprint_manager_);
     spdlog::info("entity_factory_ created");
+    return true;
+}
+
+bool game::scene::GameScene::initSystems()
+{
+    auto &dispatcher = context_.getDispatcher();
+    // 系统初始化需要在可能的依赖模块(如实体工厂)初始化之后
+    render_system_ = std::make_unique<engine::system::RenderSystem>();
+    movement_system_ = std::make_unique<engine::system::MovementSystem>();
+    animation_system_ = std::make_unique<engine::system::AnimationSystem>(registry_, dispatcher);
+    ysort_system_ = std::make_unique<engine::system::YSortSystem>();
+    audio_system_ = std::make_unique<engine::system::AudioSystem>(registry_, context_);
+
+    follow_path_system_ = std::make_unique<game::system::FollowPathSystem>();
+    remove_dead_system_ = std::make_unique<game::system::RemoveDeadSystem>();
+    block_system_ = std::make_unique<game::system::BlockSystem>();
+    set_target_system_ = std::make_unique<game::system::SetTargetSystem>();
+    attack_starter_system_ = std::make_unique<game::system::AttackStarterSystem>();
+    timer_system_ = std::make_unique<game::system::TimerSystem>();
+    orientation_system_ = std::make_unique<game::system::OrientationSystem>();
+    animation_state_system_ = std::make_unique<game::system::AnimationStateSystem>(registry_, dispatcher);
+    animation_event_system_ = std::make_unique<game::system::AnimationEventSystem>(registry_, dispatcher);
+    combat_resolve_system_ = std::make_unique<game::system::CombatResolveSystem>(registry_, dispatcher);
+    projectile_system_ = std::make_unique<game::system::ProjectileSystem>(registry_, dispatcher, *entity_factory_);
+    spdlog::info("Systems initialized");
     return true;
 }
 

@@ -46,6 +46,8 @@ namespace engine::core
             scene_manager_->handleInput();
             update(dt);
             render();
+            // 分发事件（让新创建的实体先更新再渲染）
+            dispatcher_->update();
         }
         close();
     }
@@ -352,9 +354,6 @@ namespace engine::core
     {
         // 游戏逻辑更新
         scene_manager_->update(dt);
-
-        // 分发事件
-        dispatcher_->update();
     }
 
     void GameApp::render()
