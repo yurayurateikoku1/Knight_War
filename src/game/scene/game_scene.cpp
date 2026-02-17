@@ -73,6 +73,11 @@ game::scene::GameScene::~GameScene()
 
 void game::scene::GameScene::init()
 {
+    if (!initSessionData())
+    {
+        spdlog::error("Failed to init session data");
+        return;
+    }
     if (!loadlevel())
     {
         spdlog::error("Failed to load level");
@@ -98,6 +103,7 @@ void game::scene::GameScene::init()
         spdlog::error("Failed to init systems");
         return;
     }
+    testSessionData();
     createTestEnemy();
     Scene::init();
 }
@@ -144,6 +150,21 @@ void game::scene::GameScene::clean()
     input_manager.onAction("pause"_hs).disconnect<&GameScene::onClearAllPlayers>(this);
     input_manager.onAction("move_left"_hs).disconnect<&GameScene::onCreateTestPlayerHealer>(this);
     Scene::clean();
+}
+
+bool game::scene::GameScene::initSessionData()
+{
+    if (!session_data_)
+    {
+        session_data_ = std::make_shared<game::data::SessionData>();
+        if (!session_data_->loadDefaultData())
+        {
+            spdlog::error("Failed to load session data");
+            return false;
+        }
+    }
+    level_number_ = session_data_->getLevelNumber();
+    return true;
 }
 
 bool game::scene::GameScene::loadlevel()
@@ -228,6 +249,17 @@ bool game::scene::GameScene::initSystems()
 void game::scene::GameScene::onEnemyArriveHome(const game::defs::EnemyArriveHomeEvent &event)
 {
     spdlog::info("Enemy arrive home");
+}
+
+void game::scene::GameScene::testSessionData()
+{
+    spdlog::info("关卡号: {}", level_number_);
+    spdlog::info("积分: {}", session_data_->getPoint());
+    spdlog::info("是否通关: {}", session_data_->isLevelClear());
+    for (auto &unit : session_data_->getUnitMap())
+    {
+        spdlog::info("角色名: {}, 职业: {}, 等级: {}, 稀有度: {}", unit.second.name_, unit.second.class_, unit.second.level_, unit.second.rarity_);
+    }
 }
 
 void game::scene::GameScene::createTestEnemy()
