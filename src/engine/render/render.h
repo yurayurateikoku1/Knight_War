@@ -41,8 +41,10 @@ namespace engine::render
         void drawImage(const Camera &camera, const engine::render::Image &image, const glm::vec2 &position, const glm::vec2 &scale = {1.0f, 1.0f}, double angle = 0.0f);
 
         void drawSprite(const Camera &camera, const component::Sprite &sprite, const glm::vec2 &position,
-                        const glm::vec2 &size, const float rotation = 0.0f);
+                        const glm::vec2 &size, const float rotation = 0.0f, const engine::utils::FColor &color = engine::utils::FColor::white());
 
+        void drawFilledCircle(const Camera &camera, const glm::vec2 &position, const float radius,
+                              const engine::utils::FColor &color = engine::utils::FColor::white());
         /**
          * @brief 绘制填充矩形
          *

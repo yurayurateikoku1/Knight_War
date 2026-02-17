@@ -4,6 +4,9 @@
 #include <spdlog/spdlog.h>
 #include <SDL3/SDL.h>
 #include <stdexcept>
+#include <entt/core/hashed_string.hpp>
+
+using namespace entt::literals;
 engine::render::Renderer::Renderer(SDL_Renderer *sdl_renderer, engine::resource::ResourceManager *resource_manager)
     : renderer_(sdl_renderer), resource_manager_(resource_manager)
 {
@@ -50,7 +53,28 @@ void engine::render::Renderer::drawImage(const Camera &camera, const engine::ren
     }
 }
 
-void engine::render::Renderer::drawSprite(const Camera &camera, const component::Sprite &sprite, const glm::vec2 &position, const glm::vec2 &size, const float rotation)
+void engine::render::Renderer::drawFilledCircle(const Camera &camera, const glm::vec2 &position, const float radius, const engine::utils::FColor &color)
+{
+    // 获取引擎自带的圆形纹理
+    auto circle_texture = resource_manager_->getTexture("assets/textures/UI/circle.png"_hs);
+    if (!circle_texture)
+    {
+        spdlog::error("failed to get circle texture");
+        return;
+    }
+    auto screen_position = camera.world2Screen(position);
+    // 设置颜色和透明度
+    SDL_SetTextureColorModFloat(circle_texture, color.r, color.g, color.b);
+    SDL_SetTextureAlphaModFloat(circle_texture, color.a);
+    // 绘制
+    SDL_FRect dest_rect = {screen_position.x - radius, screen_position.y - radius, radius * 2, radius * 2};
+    if (!SDL_RenderTextureRotated(renderer_, circle_texture, nullptr, &dest_rect, 0.0, nullptr, SDL_FLIP_NONE))
+    {
+        spdlog::error("Render texture failed:{}", SDL_GetError());
+    }
+}
+
+void engine::render::Renderer::drawSprite(const Camera &camera, const component::Sprite &sprite, const glm::vec2 &position, const glm::vec2 &size, const float rotation, const engine::utils::FColor &color)
 {
     auto texture = resource_manager_->getTexture(sprite.texture_id_, sprite.texture_path_);
     if (!texture)
@@ -76,6 +100,10 @@ void engine::render::Renderer::drawSprite(const Camera &camera, const component:
         sprite.src_rect_.position.y,
         sprite.src_rect_.size.x,
         sprite.src_rect_.size.y};
+
+    // 设置调整颜色与透明度
+    SDL_SetTextureColorModFloat(texture, color.r, color.g, color.b);
+    SDL_SetTextureAlphaModFloat(texture, color.a);
 
     if (!SDL_RenderTextureRotated(renderer_, texture, &src_rect, &dest_rect, rotation, NULL, sprite.is_flipped_ ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE))
     {

@@ -51,4 +51,8 @@ namespace game::defs
     struct RangedPlaceTag
     {
     }; ///< @brief 远程区域标签
+
+    struct ShowRangeTag
+    {
+    }; ///< @brief 显示攻击范围标签
 }

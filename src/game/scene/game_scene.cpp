@@ -18,10 +18,6 @@
 #include "../../engine/render/text_renderer.h"
 #include "../../engine/render/camera.h"
 #include "../../engine/ui/ui_manager.h"
-#include "../../engine/ui/ui_label.h"
-#include "../../engine/ui/ui_panel.h"
-#include "../../engine/ui/ui_image.h"
-#include "../../engine/ui/ui_button.h"
 
 // engine - component
 #include "../../engine/component/transform_component.h"
@@ -59,6 +55,8 @@
 #include "../system/health_bar_system.h"
 #include "../system/game_rule_system.h"
 #include "../ui/units_portrait_ui.h"
+#include "../system/place_unit_system.h"
+#include "../system/render_range_system.h"
 
 // game - loader & factory
 #include "../loader/entity_builder_mw.h"
@@ -123,7 +121,6 @@ void game::scene::GameScene::init()
         spdlog::error("Failed to init systems");
         return;
     }
-    testSessionData();
     createTestEnemy();
     Scene::init();
 }
@@ -146,6 +143,7 @@ void game::scene::GameScene::update(float dt)
     projectile_system_->update(dt);
     movement_system_->update(registry_, dt);
     animation_system_->update(dt);
+    place_unit_system_->update(dt);
     ysort_system_->update(registry_);
     units_portrait_ui_->update(dt);
     Scene::update(dt);
@@ -159,6 +157,7 @@ void game::scene::GameScene::render()
 
     render_system_->update(registry_, renderer, camera);
     health_bar_system_->update(registry_, renderer, camera);
+    render_range_system_->update(registry_, renderer, camera);
     Scene::render();
 }
 
@@ -167,10 +166,9 @@ void game::scene::GameScene::clean()
     auto &dispatcher = context_.getDispatcher();
     auto &input_manager = context_.getInputManager();
     dispatcher.disconnect(this);
-    input_manager.onAction("mouse_right"_hs).disconnect<&GameScene::onCreateTestPlayerMelee>(this);
-    input_manager.onAction("mouse_left"_hs).disconnect<&GameScene::onCreateTestPlayerRanged>(this);
+
     input_manager.onAction("pause"_hs).disconnect<&GameScene::onClearAllPlayers>(this);
-    input_manager.onAction("move_left"_hs).disconnect<&GameScene::onCreateTestPlayerHealer>(this);
+
     Scene::clean();
 }
 
@@ -227,10 +225,7 @@ bool game::scene::GameScene::initEventConnections()
 bool game::scene::GameScene::initInputConnections()
 {
     auto &input_manager = context_.getInputManager();
-    input_manager.onAction("mouse_right"_hs).connect<&GameScene::onCreateTestPlayerMelee>(this);
-    input_manager.onAction("mouse_left"_hs).connect<&GameScene::onCreateTestPlayerRanged>(this);
     input_manager.onAction("pause"_hs).connect<&GameScene::onClearAllPlayers>(this);
-    input_manager.onAction("move_left"_hs).connect<&GameScene::onCreateTestPlayerHealer>(this);
     return true;
 }
 
@@ -303,19 +298,10 @@ bool game::scene::GameScene::initSystems()
     effect_system_ = std::make_unique<game::system::EffectSystem>(registry_, dispatcher, *entity_factory_);
     health_bar_system_ = std::make_unique<game::system::HealthBarSystem>();
     game_rule_system_ = std::make_unique<game::system::GameRuleSystem>(registry_, dispatcher);
+    place_unit_system_ = std::make_unique<game::system::PlaceUnitSystem>(registry_, *entity_factory_, context_);
+    render_range_system_ = std::make_unique<game::system::RenderRangeSystem>();
     spdlog::info("Systems initialized");
     return true;
-}
-
-void game::scene::GameScene::testSessionData()
-{
-    spdlog::info("关卡号: {}", level_number_);
-    spdlog::info("积分: {}", session_data_->getPoint());
-    spdlog::info("是否通关: {}", session_data_->isLevelClear());
-    for (auto &unit : session_data_->getUnitMap())
-    {
-        spdlog::info("角色名: {}, 职业: {}, 等级: {}, 稀有度: {}", unit.second.name_, unit.second.class_, unit.second.level_, unit.second.rarity_);
-    }
 }
 
 void game::scene::GameScene::createTestEnemy()
@@ -331,44 +317,12 @@ void game::scene::GameScene::createTestEnemy()
     }
 }
 
-bool game::scene::GameScene::onCreateTestPlayerMelee()
-{
-    auto position = context_.getInputManager().getLogicalMousePosition();
-    auto entity = entity_factory_->createPlayerUnit("warrior"_hs, position);
-    // 让玩家处于受伤状态（治疗师不会锁定满血目标）
-    registry_.emplace<game::defs::InjuredTag>(entity);
-    auto &stats = registry_.get<game::component::StatsComponent>(entity);
-    stats.hp_ = stats.max_hp_ / 2;
-    spdlog::info("create player at: {}, {}", position.x, position.y);
-    return true;
-}
-
-bool game::scene::GameScene::onCreateTestPlayerRanged()
-{
-    auto position = context_.getInputManager().getLogicalMousePosition();
-    auto entity = entity_factory_->createPlayerUnit("archer"_hs, position);
-    // 让玩家处于受伤状态（治疗师不会锁定满血目标）
-    registry_.emplace<game::defs::InjuredTag>(entity);
-    auto &stats = registry_.get<game::component::StatsComponent>(entity);
-    stats.hp_ = stats.max_hp_ / 2;
-    spdlog::info("create PlayerRanged at: {}, {}", position.x, position.y);
-    return true;
-}
-
-bool game::scene::GameScene::onCreateTestPlayerHealer()
-{
-    auto position = context_.getInputManager().getLogicalMousePosition();
-    entity_factory_->createPlayerUnit("witch"_hs, position);
-    spdlog::info("create PlayerHealer at: {}, {}", position.x, position.y);
-    return true;
-}
-
 bool game::scene::GameScene::onClearAllPlayers()
 {
     auto view = registry_.view<game::component::PlayerComponent>();
     for (auto entity : view)
     {
-        registry_.destroy(entity);
+        context_.getDispatcher().enqueue(game::defs::RemovePlayerUnitEvent{entity});
     }
     return true;
 }

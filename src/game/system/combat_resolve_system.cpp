@@ -50,8 +50,8 @@ namespace game::system
             if (target_stats.hp_ <= 0)
             {
                 target_stats.hp_ = 0;
-                // 可重复添加
-                registry_.emplace_or_replace<game::defs::DeadTag>(event.target_);
+                // 发送移除单位事件
+                dispatcher_.enqueue(game::defs::RemovePlayerUnitEvent{event.target_});
                 spdlog::info("Player ID: {} died", entt::to_integral(event.target_));
                 // NOTE: 可添加死亡特效, 统计信息等
                 // 受伤情况
