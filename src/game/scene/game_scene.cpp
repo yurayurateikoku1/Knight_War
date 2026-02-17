@@ -36,6 +36,8 @@
 #include "../component/enemy_component.h"
 #include "../spawner/enemy_spawner.h"
 #include "title_scene.h"
+#include "level_clear_scene.h"
+#include "end_scene.h"
 
 // game - system
 #include "../system/followpath_system.h"
@@ -141,7 +143,7 @@ void game::scene::GameScene::init()
         return;
     }
     context_.getGameState().setState(engine::core::State::Playing);
-    // context_.getAudioPlayer().playMusic("battle_bgm"_hs);
+    context_.getAudioPlayer().playMusic("battle_bgm"_hs);
     Scene::init();
 }
 
@@ -192,7 +194,11 @@ void game::scene::GameScene::render()
     health_bar_system_->update(registry_, renderer, camera);
     render_range_system_->update(registry_, renderer, camera);
     Scene::render();
-    debug_ui_system_->update();
+    // 当场景栈中只有GameScene时才渲染调试UI, 不然上层有其它场景时会冲突
+    if (context_.getGameState().isPlaying() || context_.getGameState().isPaused())
+    {
+        debug_ui_system_->update(); // 调试UI的显示优先级最高，最后渲染
+    }
 }
 
 void game::scene::GameScene::clean()
@@ -270,7 +276,8 @@ bool game::scene::GameScene::initEventConnections()
     dispatcher.sink<game::defs::RestartEvent>().connect<&GameScene::onRestart>(this);
     dispatcher.sink<game::defs::BackToTitleEvent>().connect<&GameScene::onBackToTitle>(this);
     dispatcher.sink<game::defs::SaveEvent>().connect<&GameScene::onSave>(this);
-
+    dispatcher.sink<game::defs::LevelClearEvent>().connect<&GameScene::onLevelClear>(this);
+    dispatcher.sink<game::defs::GameEndEvent>().connect<&GameScene::onGameEndEvent>(this);
     return true;
 }
 
@@ -360,6 +367,32 @@ void game::scene::GameScene::onSave()
 void game::scene::GameScene::onLevelClear()
 {
     spdlog::info("Level cleared");
+    // 奖励点数 = 击杀数 + 基地血量 * 5
+    const auto point = game_stats_.enemy_killed_count_ + game_stats_.home_hp_ * 5;
+    session_data_->setLevelClear(true);
+    session_data_->addPoint(point);
+
+    // 如果当前关卡是最后一关，则进入结束场景；否则进入通关结算场景
+    if (level_config_->isFinalLevel(level_number_))
+    {
+        requestPushScene(std::make_unique<game::scene::EndScene>(context_, true));
+    }
+    else
+    {
+        requestPushScene(std::make_unique<game::scene::LevelClearScene>(
+            context_,
+            blueprint_manager_,
+            ui_config_,
+            level_config_,
+            session_data_,
+            game_stats_));
+    }
+}
+
+void game::scene::GameScene::onGameEndEvent(const game::defs::GameEndEvent &event)
+{
+    spdlog::info("Game ended");
+    requestPushScene(std::make_unique<game::scene::EndScene>(context_, event.is_win_));
 }
 
 bool game::scene::GameScene::initSystems()

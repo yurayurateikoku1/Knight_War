@@ -42,47 +42,48 @@ namespace game::scene
     {
         if (!initSessionData())
         {
-            spdlog::error("初始化session_data_失败");
+            spdlog::error("init session data failed");
             return;
         }
         if (!initLevelConfig())
         {
-            spdlog::error("初始化关卡配置失败");
+            spdlog::error("init level config failed");
             return;
         }
         if (!initBlueprintManager())
         {
-            spdlog::error("初始化蓝图管理器失败");
+            spdlog::error("init blueprint manager failed");
             return;
         }
         if (!initUIConfig())
         {
-            spdlog::error("初始化UI配置失败");
+            spdlog::error("init ui config failed");
             return;
         }
         if (!loadTitleLevel())
         {
-            spdlog::error("加载关卡失败");
+            spdlog::error("initialize title level failed");
             return;
         }
         if (!initSystems())
         {
-            spdlog::error("初始化系统失败");
+            spdlog::error("init systems failed");
             return;
         }
         if (!initRegistryContext())
         {
-            spdlog::error("初始化注册表上下文失败");
+            spdlog::error("init registry context failed");
             return;
         }
         if (!initUI())
         {
-            spdlog::error("初始化UI失败");
+            spdlog::error("init ui failed");
             return;
         }
 
         context_.getGameState().setState(engine::core::State::Title);
-        context_.getTime().setTimeScale(1.0f); // 重置游戏速度
+        context_.getTime().setTimeScale(1.0f);               // 重置游戏速度
+        context_.getAudioPlayer().playMusic("title_bgm"_hs); // 设置标题场景背景音乐
 
         engine::scene::Scene::init();
     }

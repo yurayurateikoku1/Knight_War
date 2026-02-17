@@ -126,4 +126,12 @@ namespace game::defs
     struct LevelClearEvent
     {
     };
+    struct LevelClearDelayedEvent
+    { ///< @brief 关卡通关事件(延迟切换场景)
+        float delay_time_{3.0f};
+    };
+    struct GameEndEvent
+    {
+        bool is_win_{false}; ///< @brief 是否获胜
+    };
 }

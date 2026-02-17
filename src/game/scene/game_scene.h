@@ -6,6 +6,7 @@
 #include "../data/ui_config.h"
 #include "../data/game_stats.h"
 #include "../data/level_config.h"
+#include "../defs/events.h"
 #include <entt/entity/entity.hpp>
 #include "../system/fwd.h"
 #include <memory>
@@ -121,5 +122,6 @@ namespace game::scene
         void onBackToTitle();
         void onSave();
         void onLevelClear();
+        void onGameEndEvent(const game::defs::GameEndEvent &event);
     };
 }
