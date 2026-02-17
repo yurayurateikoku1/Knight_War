@@ -26,6 +26,11 @@ namespace game::scene
         std::unique_ptr<game::system::FollowPathSystem> follow_path_system_;
         std::unique_ptr<game::system::RemoveDeadSystem> remove_dead_system_;
         std::unique_ptr<game::system::BlockSystem> block_system_;
+        std::unique_ptr<game::system::SetTargetSystem> set_target_system_;
+        std::unique_ptr<game::system::AttackStarterSystem> attack_starter_system_;
+        std::unique_ptr<game::system::TimerSystem> timer_system_;
+        std::unique_ptr<game::system::OrientationSystem> orientation_system_;
+        std::unique_ptr<game::system::AnimationStateSystem> animation_state_system_;
 
         std::unordered_map<int, game::data::WaypointNode> waypoint_nodes_; // <id, 路径节点>
         std::vector<int> start_points_;                                    // 起始点
@@ -54,6 +59,7 @@ namespace game::scene
         void createTestEnemy();
         bool onCreateTestPlayerMelee();
         bool onCreateTestPlayerRanged();
+        bool onCreateTestPlayerHealer();
         bool onClearAllPlayers();
     };
 }

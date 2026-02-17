@@ -63,10 +63,7 @@ namespace game::system
                     enemy_velocity.velocity_ = glm::vec2(0.0f, 0.0f); // 设置敌人速度为0
                     // 给敌人添加被阻挡组件
                     registry.emplace<game::component::BlockedByComponent>(enemy_entity, blocker_entity);
-                    spdlog::info("敌人: ID: {}, 被阻挡, 阻挡者: ID: {}", entt::to_integral(enemy_entity), entt::to_integral(blocker_entity));
-
-                    // 播放动画“attack” （临时测试用，未来会将攻击逻辑放在其他系统里）
-                    dispatcher.enqueue(engine::utils::PlayAnimationEvent{enemy_entity, "attack"_hs, true});
+                    spdlog::info("Enemy: ID: {}, blocked, blocker: ID: {}", entt::to_integral(enemy_entity), entt::to_integral(blocker_entity));
                 }
             }
         }
