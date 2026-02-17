@@ -3,7 +3,7 @@
 #include "../component/player_component.h"
 #include "../component/blocked_by_component.h"
 #include "../defs/tags.h"
-#include "../../engine/utils/events.h"
+#include <entt/core/hashed_string.hpp>
 #include <entt/entity/registry.hpp>
 #include <entt/signal/dispatcher.hpp>
 #include <spdlog/spdlog.h>

@@ -23,6 +23,8 @@ namespace game::scene
         std::unique_ptr<engine::system::MovementSystem> movement_system_;
         std::unique_ptr<engine::system::AnimationSystem> animation_system_;
         std::unique_ptr<engine::system::YSortSystem> ysort_system_;
+        std::unique_ptr<engine::system::AudioSystem> audio_system_;
+
         std::unique_ptr<game::system::FollowPathSystem> follow_path_system_;
         std::unique_ptr<game::system::RemoveDeadSystem> remove_dead_system_;
         std::unique_ptr<game::system::BlockSystem> block_system_;
@@ -31,6 +33,8 @@ namespace game::scene
         std::unique_ptr<game::system::TimerSystem> timer_system_;
         std::unique_ptr<game::system::OrientationSystem> orientation_system_;
         std::unique_ptr<game::system::AnimationStateSystem> animation_state_system_;
+        std::unique_ptr<game::system::AnimationEventSystem> animation_event_system_;
+        std::unique_ptr<game::system::CombatResolveSystem> combat_resolve_system_;
 
         std::unordered_map<int, game::data::WaypointNode> waypoint_nodes_; // <id, 路径节点>
         std::vector<int> start_points_;                                    // 起始点

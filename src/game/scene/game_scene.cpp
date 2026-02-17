@@ -31,6 +31,7 @@
 #include "../../engine/system/movement_system.h"
 #include "../../engine/system/animation_system.h"
 #include "../../engine/system/ysort_system.h"
+#include "../../engine/system/audio_system.h"
 
 // game - component & defs
 #include "../component/enemy_component.h"
@@ -47,6 +48,8 @@
 #include "../system/timer_system.h"
 #include "../system/orientation_system.h"
 #include "../system/animation_state_system.h"
+#include "../system/animation_event_system.h"
+#include "../system/combat_resolve_system.h"
 
 // game - loader & factory
 #include "../loader/entity_builder_mw.h"
@@ -63,6 +66,7 @@ game::scene::GameScene::GameScene(engine::core::Context &context)
     movement_system_ = std::make_unique<engine::system::MovementSystem>();
     animation_system_ = std::make_unique<engine::system::AnimationSystem>(registry_, dispatcher);
     ysort_system_ = std::make_unique<engine::system::YSortSystem>();
+    audio_system_ = std::make_unique<engine::system::AudioSystem>(registry_, context_);
 
     follow_path_system_ = std::make_unique<game::system::FollowPathSystem>();
     remove_dead_system_ = std::make_unique<game::system::RemoveDeadSystem>();
@@ -73,6 +77,8 @@ game::scene::GameScene::GameScene(engine::core::Context &context)
     timer_system_ = std::make_unique<game::system::TimerSystem>();
     orientation_system_ = std::make_unique<game::system::OrientationSystem>();
     animation_state_system_ = std::make_unique<game::system::AnimationStateSystem>(registry_, dispatcher);
+    animation_event_system_ = std::make_unique<game::system::AnimationEventSystem>(registry_, dispatcher);
+    combat_resolve_system_ = std::make_unique<game::system::CombatResolveSystem>(registry_, dispatcher);
 }
 
 game::scene::GameScene::~GameScene()
@@ -113,11 +119,11 @@ void game::scene::GameScene::update(float dt)
     remove_dead_system_->update(registry_);
 
     timer_system_->update(registry_, dt);
+    block_system_->update(registry_, dispatcher);
     set_target_system_->update(registry_);
-    orientation_system_->update(registry_);
 
     follow_path_system_->update(registry_, dispatcher, waypoint_nodes_);
-    block_system_->update(registry_, dispatcher);
+    orientation_system_->update(registry_);
     attack_starter_system_->update(registry_, dispatcher);
     movement_system_->update(registry_, dt);
     animation_system_->update(dt);
